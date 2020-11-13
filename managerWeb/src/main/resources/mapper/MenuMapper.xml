@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neu.movie.mapper.MenuMapper">
+
+    <select id="findByQuery" resultType="menu" parameterType="menuQuery">
+        select * from menu
+        <where>
+            <if test="name!=null and name!=''">
+                and name = #{name}
+            </if>
+            <choose>
+                <when test="parentId==null">
+                    and parentId is null
+                </when>
+                <otherwise>
+                    and parentId = #{parentId}
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <resultMap id="leftMenuMap" type="menu">
+        <result column="name" property="name"/>
+        <result column="url" property="url"/>
+        <result column="auth" property="auth"/>
+        <result column="icon" property="icon"/>
+        <collection property="children" ofType="menu" columnPrefix="c_">
+            <result column="name" property="name"/>
+            <result column="url" property="url"/>
+            <result column="auth" property="auth"/>
+            <result column="icon" property="icon"/>
+        </collection>
+    </resultMap>
+    <!--部门、员工 -->
+    <!--查找一级和子菜单-->
+    <select id="findLeftMenu" resultMap="leftMenuMap">
+         select t.name,t.url,t.auth,t.icon,c.name c_name,c.url c_url,c.auth c_auth,c.icon c_icon from menu t left join menu c on t.id = c.parentId where t.parentId is null
+    </select>
+
+</mapper>

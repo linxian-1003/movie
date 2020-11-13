@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+        "> 
+        
+      <context:component-scan base-package="com.neu.movie.service.impl"></context:component-scan>
+       
+      <context:property-placeholder location="classpath:db.properties" system-properties-mode="NEVER"/>
+      <!-- 管理数据源 -->
+      <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+         <property name="url" value="${url}"></property>
+         <property name="driverClassName" value="${driverClassName}"></property>
+         <property name="username" value="${username}"></property>
+         <property name="password" value="${password}"></property>
+      </bean>
+      
+      <!-- 事务处理 -->
+      <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+          <property name="dataSource" ref="dataSource"></property>
+      </bean>
+      
+      <tx:advice id="txAdvice" transaction-manager="txManager">
+          <tx:attributes>
+              <!-- 通用 -->
+              <tx:method name="find*" read-only="true" propagation="SUPPORTS"/>
+              <tx:method name="get*" read-only="true" propagation="SUPPORTS"/>
+              <tx:method name="query*" read-only="true" propagation="SUPPORTS"/>
+              <tx:method name="*"/>
+          </tx:attributes>
+      </tx:advice>
+      
+      <aop:config>
+          <aop:pointcut expression="execution( * com.neu.movie.service.impl.*.*(..))" id="pointCut"/>
+          <aop:advisor advice-ref="txAdvice" pointcut-ref="pointCut"/>
+      </aop:config>
+      
+      <!-- SqlSessionFactory
+               DataSoruce
+       -->
+      <bean class="org.mybatis.spring.SqlSessionFactoryBean">
+         <property name="dataSource" ref="dataSource"></property>
+         <property name="configLocation" value="classpath:mybatis.xml"></property>
+         <property name="mapperLocations">
+             <list>
+                <value>classpath:mapper/*Mapper.xml</value>
+             </list>
+         </property>
+      </bean>
+      
+      <!-- 会到指定的包下将创建接口的代理对象-->
+      <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+          <property name="basePackage" value="com.neu.movie.mapper"></property>
+      </bean>
+        
+</beans>

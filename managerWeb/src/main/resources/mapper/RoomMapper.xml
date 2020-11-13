@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neu.movie.mapper.RoomMapper">
+
+  <resultMap id="BaseResultMap" type="com.neu.movie.domain.Room" >
+      <id column="id" property="id"/>
+      <result column="name" property="name" />
+      <result column="seatCount" property="seatCount" />
+      <result column="buyCount" property="buyCount" />
+      <result column="leafCount" property="leafCount" />
+      <result column="movieName" property="movieName" />
+      <result column="cinemaId" property="cinemaId" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+      id,
+      name,
+      seatCount,
+      buyCount,
+      leafCount,
+      movieName,
+      cinemaId
+  </sql>
+  
+  <!--根据Id查询-->
+  <select id="findById" resultMap="BaseResultMap" parameterType="int" >
+      select <include refid="Base_Column_List" /> from room where id = #{id}
+  </select>
+  
+  
+  <!-- 多条件查询 -->
+  <select id="findByQuery" resultMap="BaseResultMap" parameterType="com.neu.movie.query.RoomQuery">
+      select <include refid="Base_Column_List" /> from room
+      <trim prefix="where" prefixOverrides="and |or ">
+         <if test="name != null and name != ''">
+            <bind name="likeKeyWords" value="'%' + _parameter.name + '%'" />
+            and name like #{likeKeyWords}
+         </if>
+      </trim>
+      order by id DESC
+  </select>
+  
+
+  
+  <!-- 批量删除 -->
+  <delete id="deleteByIds">
+      delete from room where id in
+      <foreach item="id" collection="array" open="(" separator="," close=")">
+          #{id}
+      </foreach>
+  </delete>
+  
+  <!--部分字段允许为空-->
+  <insert id="add" parameterType="com.neu.movie.domain.Room" >
+    insert into room
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+        id,
+        name,
+        seatCount,
+        buyCount,
+        leafCount,
+        <if test="movieName != null and movieName != ''" >
+            movieName,
+        </if>
+        cinemaId
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+        #{id},
+        #{name},
+        #{seatCount},
+        #{buyCount},
+        #{seatCount},
+        <if test="movieName != null and movieName != ''" >
+            #{movieName},
+        </if>
+        #{cinemaId}
+    </trim>
+  </insert>
+  
+  <!--更新--> 
+  <update id="update" parameterType="com.neu.movie.domain.Room" >
+      update room
+      <set>
+          <if test="name != null and name != ''" >
+              name = #{name},
+          </if>
+          <if test="seatCount != null" >
+              seatCount = #{seatCount},
+          </if>
+          <if test="buyCount != null" >
+              buyCount = #{buyCount},
+          </if>
+          <if test="leafCount != null" >
+              leafCount = #{leafCount},
+          </if>
+          <if test="movieName != null and movieName != ''" >
+              movieName = #{movieName},
+          </if>
+          <if test="cinemaId != null" >
+              cinemaId = #{cinemaId}
+          </if>
+      </set>
+      where id = #{id}
+  </update>
+	
+</mapper>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neu.movie.mapper.MovieMapper">
+
+  <resultMap id="BaseResultMap" type="com.neu.movie.domain.Movie" >
+      <id column="id" property="id"/>
+      <result column="name" property="name" />
+      <result column="img" property="img" />
+      <result column="tag" property="tag" />
+      <result column="borthday" property="borthday" />
+      <result column="preview" property="preview" />
+      <result column="score" property="score" />
+      <result column="descr" property="descr" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+      id,
+      name,
+      img,
+      tag,
+      borthday,
+      preview,
+      score,
+      descr
+  </sql>
+  
+  <!--根据Id查询-->
+  <select id="findById" resultMap="BaseResultMap" parameterType="int" >
+      select <include refid="Base_Column_List" /> from movie where id = #{id}
+  </select>
+  
+  
+  <!-- 多条件查询 -->
+  <select id="findByQuery" resultMap="BaseResultMap" parameterType="com.neu.movie.query.MovieQuery">
+      select <include refid="Base_Column_List" /> from movie
+      <trim prefix="where" prefixOverrides="and |or ">
+         <if test="name != null and name != ''">
+            <bind name="likeKeyWords" value="'%' + _parameter.name + '%'" />
+            and name like #{likeKeyWords}
+         </if>
+      </trim>
+      order by id DESC
+  </select>
+  
+
+  
+  <!-- 批量删除 -->
+  <delete id="deleteByIds">
+      delete from movie where id in
+      <foreach item="id" collection="array" open="(" separator="," close=")">
+          #{id}
+      </foreach>
+  </delete>
+  
+  <!--部分字段允许为空-->
+  <insert id="add" parameterType="com.neu.movie.domain.Movie" >
+    insert into movie
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+        id,
+        name,
+        img,
+        tag,
+        <if test="borthday != null" >
+            borthday,
+        </if>
+        <if test="preview != null and preview != ''" >
+            preview,
+        </if>
+        <if test="score != null" >
+            score,
+        </if>
+        <if test="descr != null and descr != ''" >
+            descr
+        </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+        #{id},
+        #{name},
+        #{img},
+        #{tag},
+        <if test="borthday != null" >
+            #{borthday},
+        </if>
+        <if test="preview != null and preview != ''" >
+            #{preview},
+        </if>
+        <if test="score != null" >
+            #{score},
+        </if>
+        <if test="descr != null and descr != ''" >
+            #{descr}
+        </if>
+    </trim>
+  </insert>
+  
+  <!--更新--> 
+  <update id="update" parameterType="com.neu.movie.domain.Movie" >
+      update movie
+      <set>
+          <if test="name != null and name != ''" >
+              name = #{name},
+          </if>
+          <if test="img != null and img != ''" >
+              img = #{img},
+          </if>
+          <if test="tag != null and tag != ''" >
+              tag = #{tag},
+          </if>
+          <if test="borthday != null" >
+              borthday = #{borthday},
+          </if>
+          <if test="preview != null and preview != ''" >
+              preview = #{preview},
+          </if>
+          <if test="score != null" >
+              score = #{score},
+          </if>
+          <if test="descr != null and descr != ''" >
+              descr = #{descr}
+          </if>
+      </set>
+      where id = #{id}
+  </update>
+
+
+    <select id="movieNew" resultType="movie">
+       select m.id,m.name,m.img from movie m where m.id not in (select t.movieId from middle_movie_cinema t,cinema c where t.cinemaId = c.id and c.id = #{cinemaId})
+    </select>
+
+    <select id="movieOld" resultType="movie">
+       select m.id,m.name,m.img from movie m where m.id in (select t.movieId from middle_movie_cinema t,cinema c where t.cinemaId = c.id and c.id = #{cinemaId})
+    </select>
+</mapper>

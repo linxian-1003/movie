@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neu.movie.mapper.RoleMapper">
+
+    <select id="findByQuery" resultType="role" parameterType="roleQuery">
+        select * from role
+        <where>
+            <if test="name!=null and name!=''">
+                and name = #{name}
+            </if>
+        </where>
+    </select>
+
+    <select id="findById" resultType="role" parameterType="int">
+        select * from role where id = #{id}
+    </select>
+
+    <delete id="deleteByIds">
+        delete from role where id in
+        <foreach collection="array" open="(" close=")" separator="," item="id">
+        #{id}
+        </foreach>
+    </delete>
+
+    <insert id="add" parameterType="role">
+        insert into role (name,remark) values(#{name},#{remark})
+    </insert>
+
+    <!--更新-->
+    <update id="update" parameterType="role">
+        update role
+        <set>
+            <if test="name!=null and name !=''">
+                name=#{name},
+            </if>
+            <if test="remark!=null and remark !=''">
+                remark=#{remark},
+            </if>
+        </set>
+         where id = #{id}
+    </update>
+
+    <!--根据userId查找角色id数组-->
+    <select id="findByUserId" resultType="int">
+        select roleId from middle_user_role where userId = #{userId}
+    </select>
+
+
+    <delete id="unbind">
+        delete from middle_role_menu where roleId = #{roleId}
+    </delete>
+
+    <insert id="bind">
+        insert into middle_role_menu(roleId,menuId) values(#{roleId},#{menuId})
+    </insert>
+
+    <!--根据roleId-->
+    <select id="findPermissionIds" resultType="int">
+        select menuId from middle_role_menu where roleId = #{roleId}
+    </select>
+
+</mapper>

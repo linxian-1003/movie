@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neu.movie.mapper.CinemaMapper">
+
+    <select id="findByQuery" resultType="cinema" parameterType="cinemaQuery">
+        select * from cinema
+        <where>
+            <if test="name!=null and name!=''">
+                and name = #{name}
+            </if>
+        </where>
+    </select>
+
+    <select id="findById" resultType="cinema" parameterType="int">
+        select * from cinema where id = #{id}
+    </select>
+
+    <delete id="deleteByIds">
+        delete from cinema where id in
+        <foreach collection="array" open="(" close=")" separator="," item="id">
+        #{id}
+        </foreach>
+    </delete>
+
+    <insert id="add" parameterType="cinema" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        insert into cinema (name,provinceCode,cityCode,areaCode,street,longitude,latitude) values(#{name},#{provinceCode},#{cityCode},#{areaCode},#{street},#{longitude},#{latitude})
+    </insert>
+
+    <!--更新-->
+    <update id="update" parameterType="cinema">
+        update cinema
+        <set>
+            <if test="name!=null and name !=''">
+                name=#{name},
+            </if>
+        </set>
+         where id = #{id}
+    </update>
+</mapper>

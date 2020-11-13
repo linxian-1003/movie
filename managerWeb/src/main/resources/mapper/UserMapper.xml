@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neu.movie.mapper.UserMapper">
+    <select id="login" resultType="user">
+        select * from user where loginName = #{loginName} and password = #{password}
+    </select>
+
+    <select id="findByQuery" resultType="user" parameterType="userQuery">
+        select * from user
+        <where>
+            <if test="name!=null and name!=''">
+                and name = #{name}
+            </if>
+            <if test="loginName!=null and loginName!=''">
+                and loginName = #{loginName}
+            </if>
+        </where>
+       <!--limit #{offset},#{pageSize}-->
+    </select>
+
+    <select id="findById" resultType="user" parameterType="int">
+        select * from user where id = #{id}
+    </select>
+
+    <delete id="deleteByIds">
+        delete from user where id in
+        <foreach collection="array" open="(" close=")" separator="," item="id">
+        #{id}
+        </foreach>
+    </delete>
+
+    <insert id="add" parameterType="user" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        insert into user (name,loginName,password,status,header) values(#{name},#{loginName},#{password},#{status},#{header})
+    </insert>
+
+    <!--更新-->
+    <update id="update" parameterType="user">
+        update user
+        <set>
+            <if test="name!=null and name !=''">
+                name=#{name},
+            </if>
+            <if test="password!=null and password !=''">
+                password=#{password},
+            </if>
+            <if test="header!=null and header !=''">
+                header=#{header},
+            </if>
+            <if test="status!=null and status !=''">
+                status=#{status}
+            </if>
+        </set>
+         where id = #{id}
+    </update>
+
+
+    <!--和角色绑定-->
+    <insert id="bind">
+        insert into middle_user_role (userId,roleId) values(#{userId},#{roleId})
+    </insert>
+    <delete id="unbind">
+        delete from middle_user_role where userId = #{userId}
+    </delete>
+
+    <!--查找所有的权限-->
+    <select id="findAllPermission" resultType="menu">
+        SELECT DISTINCT p.* FROM middle_role_menu t,menu p WHERE t.menuId = p.id AND t.roleId IN (SELECT r.id FROM middle_user_role m,role r WHERE m.roleId = r.id AND m.userId = #{userId})
+    </select>
+</mapper>
